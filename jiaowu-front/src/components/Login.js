@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import './Login.scss';
-import logo from '../assets/img/logo.png';
 import logo2 from '../assets/img/logo2.png';
-import logo3 from '../assets/img/logo3.png';
+import { useHistory } from 'react-router-dom';
 
 const { Title } = Typography;
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const history = useHistory();
 
   const onFinish = (values) => {
     setLoading(true);
@@ -17,6 +17,7 @@ const Login = () => {
       setLoading(false);
       if (values.username === 'admin' && values.password === '123456') {
         message.success('登录成功！');
+        history.push('/home');
       } else {
         message.error('账号或密码错误');
       }
