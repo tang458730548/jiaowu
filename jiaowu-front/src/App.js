@@ -1,21 +1,25 @@
 import React from 'react';
-import { HashRouter, NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import Routes from './router';
 
 const App = () => {
+  const location = useLocation();
+  const hideNav = location.pathname === '/';
   return (
-    <HashRouter>
-      <div id="nav">
-        <NavLink exact to="/">
-          Home
-        </NavLink>{' '}
-        |{' '}
-        <NavLink exact to="/about">
-          About
-        </NavLink>
-      </div>
+    <>
+      {!hideNav && (
+        <div id="nav">
+          <NavLink exact to="/home">
+            Home
+          </NavLink>{' '}
+          |{' '}
+          <NavLink exact to="/about">
+            About
+          </NavLink>
+        </div>
+      )}
       <Routes />
-    </HashRouter>
+    </>
   );
 };
 
