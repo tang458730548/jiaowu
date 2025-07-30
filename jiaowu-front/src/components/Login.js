@@ -4,24 +4,57 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import './Login.scss';
 import logo2 from '../assets/img/logo2.png';
 import { useHistory } from 'react-router-dom';
+import { authAPI } from '../api/auth';
+import CryptoJS from 'crypto-js';
 
 const { Title } = Typography;
-
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const history = useHistory();
+  const [captchaImg, setCaptchaImg] = useState('');
+  const [captchaCode, setCaptchaCode] = useState('');
+  const [sessionId, setSessionId] = useState('');
 
-  const onFinish = (values) => {
+  // 获取验证码
+  const fetchCaptcha = async () => {
+    try {
+      const res = await authAPI.getCaptcha(sessionId);
+      setCaptchaCode(res.data.code);
+      setSessionId(res.data.sessionId);
+    } catch {
+      setCaptchaCode('');
+      setSessionId('');
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCaptcha();
+  }, []);
+
+  const onFinish = async (values) => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const encryptedPassword = CryptoJS.MD5(values.password).toString();
+      const res = await authAPI.employeeLogin({
+        username: values.username,
+        password: encryptedPassword,
+        verificationCode: values.verificationCode, // 用户输入的验证码
+        code: captchaCode,       // 后端下发的code
+        sessionId: sessionId     // sessionId
+      });
       setLoading(false);
-      if (values.username === 'admin' && values.password === '123456') {
+      if (res && res.code === 200) {
         message.success('登录成功！');
         history.push('/home');
       } else {
-        message.error('账号或密码错误');
+        message.error(res.message || '账号、密码或验证码错误');
+        fetchCaptcha();
       }
-    }, 1000);
+    } catch (e) {
+      setLoading(false);
+      message.error((e && e.message) || '登录失败');
+      fetchCaptcha();
+    }
   };
 
   return (
@@ -59,6 +92,32 @@ const Login = () => {
               <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}> 
                 <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
               </Form.Item>
+              <Form.Item name="verificationCode" rules={[{ required: true, message: '请输入验证码' }]}> 
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Input placeholder="验证码" size="large" style={{ flex: 1, marginRight: 8 }} autoComplete="off" />
+                  <div
+                    style={{ 
+                      height: 40, 
+                      width: 100, 
+                      cursor: 'pointer', 
+                      borderRadius: 4, 
+                      border: '1px solid #eee',
+                      backgroundColor: '#f6f8fa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '20px',
+                      fontWeight: 'bold',
+                      color: '#333',
+                      userSelect: 'none'
+                    }}
+                    onClick={fetchCaptcha}
+                    title="点击刷新验证码"
+                  >
+                    {captchaCode}
+                  </div>
+                </div>
+              </Form.Item>
               <Form.Item>
                 <Button type="primary" htmlType="submit" block size="large" loading={loading}>
                   登录
@@ -66,6 +125,28 @@ const Login = () => {
               </Form.Item>
             </Form>
           </Card>
+        </div>
+      </div>
+      {/* 底部版权信息 */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        background: 'rgba(0, 0, 0, 0.3)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '12px 24px',
+        height: 50,
+        lineHeight: '26px',
+        backdropFilter: 'blur(5px)',
+        zIndex: 1000
+      }}>
+        <div style={{ color: '#fff', fontSize: '12px', textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)' }}>
+          © 2024 教务管理系统. All Rights Reserved. | 
+          <span style={{ marginLeft: 8, color: 'rgba(255, 255, 255, 0.8)' }}>
+            技术支持：教务管理团队 | 版本：v1.0.0
+          </span>
         </div>
       </div>
     </div>

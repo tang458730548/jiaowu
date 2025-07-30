@@ -1,33 +1,11 @@
-// 通用API请求封装
-export async function get(url, params = {}) {
-  let query = '';
-  if (Object.keys(params).length > 0) {
-    query = '?' + new URLSearchParams(params).toString();
-  }
-  const res = await fetch(url + query, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json'
-    },
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || '网络请求失败');
-  }
-  return await res.json();
-}
+// 向后兼容的API导出
+// 新的API服务已迁移到 src/api/ 目录下
+// 建议使用新的API服务：import { authAPI } from '../api/auth'; import { employeeAPI } from '../api/employee';
 
-export async function post(url, data = {}) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || '网络请求失败');
-  }
-  return await res.json();
-} 
+import { get, post, put, del } from '../api/index';
+
+// 导出通用方法以保持向后兼容
+export { get, post, put, del };
+
+// 导出默认的api实例
+export { default as api } from '../api/index'; 

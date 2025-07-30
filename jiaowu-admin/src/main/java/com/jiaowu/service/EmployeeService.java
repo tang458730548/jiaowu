@@ -12,6 +12,15 @@ public interface EmployeeService {
     Employee findById(Long id);
     List<Employee> findAll();
     Page<Employee> findAll(Pageable pageable);
-
+    Page<Employee> findAll(Pageable pageable, String username, String nickname);
     Employee updateStatus(Long id, Employee employee);
+    
+    // 导出CSV
+    byte[] exportToCsv(String username, String nickname);
+    
+    // 根据用户名查找职工
+    Employee findByUsername(String username);
+    
+    // 根据用户名和密码查找职工
+    Employee findByUsernameAndPassword(String username, String password);
 }
