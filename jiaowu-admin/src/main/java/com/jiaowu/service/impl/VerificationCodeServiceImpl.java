@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -18,6 +19,22 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
 
     @Override
     public String generateCode(String sessionId, String username) {
+        // 先将该sessionId的旧验证码标记为已使用
+        List<VerificationCode> oldCodes = verificationCodeRepository.findBySessionIdAndUsedFalse(sessionId);
+        for (VerificationCode oldCode : oldCodes) {
+            oldCode.setUsed(true);
+            verificationCodeRepository.save(oldCode);
+        }
+        
+        // 如果提供了用户名，也将该用户名的旧验证码标记为已使用
+        if (username != null && !username.trim().isEmpty()) {
+            List<VerificationCode> oldUserCodes = verificationCodeRepository.findByUsernameAndUsedFalse(username);
+            for (VerificationCode oldUserCode : oldUserCodes) {
+                oldUserCode.setUsed(true);
+                verificationCodeRepository.save(oldUserCode);
+            }
+        }
+        
         // 生成4位随机数字验证码
         Random random = new Random();
         String code = String.format("%04d", random.nextInt(10000));

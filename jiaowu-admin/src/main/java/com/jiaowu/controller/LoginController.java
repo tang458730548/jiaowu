@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/login")
+@RequestMapping("/login")
 public class LoginController {
 
     @Autowired
