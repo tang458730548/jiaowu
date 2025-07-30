@@ -26,6 +26,11 @@ public class EmployeeController {
         return employeeService.update(id, employee);
     }
 
+    @PostMapping("/updateStatus/{id}")
+    public Employee updateStatus(@PathVariable Long id, @RequestBody Employee employee) {
+        return employeeService.updateStatus(id, employee);
+    }
+
     @PostMapping("/delete/{id}")
     public void delete(@PathVariable Long id) {
         employeeService.delete(id);

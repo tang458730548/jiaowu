@@ -12,4 +12,6 @@ public interface EmployeeService {
     Employee findById(Long id);
     List<Employee> findAll();
     Page<Employee> findAll(Pageable pageable);
-} 
+
+    Employee updateStatus(Long id, Employee employee);
+}

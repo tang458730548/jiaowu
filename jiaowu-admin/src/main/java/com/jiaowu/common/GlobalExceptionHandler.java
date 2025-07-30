@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * 全局异常处理器
@@ -60,6 +61,16 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         log.error("约束违反: {}", message);
         return Result.error(400, message);
+    }
+
+    /**
+     * 处理数据库完整性约束异常
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Result<String> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        log.error("数据库完整性约束异常: ", e);
+        return Result.error(409, "用户名已存在，请使用其他用户名");
     }
 
     /**

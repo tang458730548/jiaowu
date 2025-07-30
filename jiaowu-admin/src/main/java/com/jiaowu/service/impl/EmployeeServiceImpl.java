@@ -3,13 +3,19 @@ package com.jiaowu.service.impl;
 import com.jiaowu.entity.Employee;
 import com.jiaowu.repository.EmployeeRepository;
 import com.jiaowu.service.EmployeeService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.dao.DataIntegrityViolationException;
+
+import javax.validation.ConstraintViolationException;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -27,10 +33,15 @@ public class EmployeeServiceImpl implements EmployeeService {
         Optional<Employee> optional = employeeRepository.findById(id);
         if (optional.isPresent()) {
             Employee exist = optional.get();
-            exist.setUsername(employee.getUsername());
-            exist.setPassword(employee.getPassword());
-            exist.setGender(employee.getGender());
-            exist.setNickname(employee.getNickname());
+            if (StringUtils.isNotBlank(employee.getUsername())) {
+                exist.setUsername(employee.getUsername());
+            }
+            if (StringUtils.isNotBlank(employee.getGender())) {
+                exist.setGender(employee.getGender());
+            }
+            if (StringUtils.isNotBlank(employee.getNickname())) {
+                exist.setNickname(employee.getNickname());
+            }
             exist.setTitle(employee.getTitle());
             exist.setEmail(employee.getEmail());
             exist.setEnrollYear(employee.getEnrollYear());
@@ -59,5 +70,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Page<Employee> findAll(Pageable pageable) {
         return employeeRepository.findAll(pageable);
+    }
+
+    @Override
+    public Employee updateStatus(Long id, Employee employee) {
+        Optional<Employee> optional = employeeRepository.findById(id);
+        if (optional.isPresent()) {
+            Employee e = optional.get();
+            e.setStatus(employee.getStatus());
+            e.setUpdateTime(new Date());
+            return employeeRepository.save(e);
+        }
+        return null;
     }
 } 
