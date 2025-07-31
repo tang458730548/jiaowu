@@ -1,0 +1,40 @@
+CREATE TABLE `tb_jw_module` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `parent_id` BIGINT(20) DEFAULT 0 COMMENT '父级模块ID，0表示顶级模块',
+  `module_name` VARCHAR(100) NOT NULL COMMENT '模块名称',
+  `module_code` VARCHAR(50) NOT NULL COMMENT '模块编码，唯一标识',
+  `module_type` TINYINT(1) DEFAULT 1 COMMENT '模块类型 1-菜单 2-按钮 3-页面',
+  `icon` VARCHAR(100) DEFAULT NULL COMMENT '图标',
+  `path` VARCHAR(200) DEFAULT NULL COMMENT '路由路径',
+  `component` VARCHAR(200) DEFAULT NULL COMMENT '前端组件路径',
+  `permission` VARCHAR(100) DEFAULT NULL COMMENT '权限标识',
+  `sort_order` INT(11) DEFAULT 0 COMMENT '排序号',
+  `level` INT(11) DEFAULT 1 COMMENT '层级，从1开始',
+  `is_visible` TINYINT(1) DEFAULT 1 COMMENT '是否可见 1-可见 0-隐藏',
+  `is_enabled` TINYINT(1) DEFAULT 1 COMMENT '是否启用 1-启用 0-禁用',
+  `description` VARCHAR(500) DEFAULT NULL COMMENT '模块描述',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` BIGINT(20) DEFAULT NULL COMMENT '创建人ID',
+  `update_by` BIGINT(20) DEFAULT NULL COMMENT '更新人ID',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_module_code` (`module_code`),
+  KEY `idx_parent_id` (`parent_id`),
+  KEY `idx_sort_order` (`sort_order`),
+  KEY `idx_level` (`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='教务模块表';
+
+-- 插入一些示例数据
+INSERT INTO `tb_jw_module` (`parent_id`, `module_name`, `module_code`, `module_type`, `icon`, `path`, `component`, `permission`, `sort_order`, `level`, `description`) VALUES
+(0, '系统管理', 'system', 1, 'setting', '/system', 'Layout', 'system', 1, 1, '系统管理模块'),
+(1, '用户管理', 'system:user', 1, 'user', '/system/user', 'system/user/index', 'system:user:list', 1, 2, '用户管理'),
+(1, '角色管理', 'system:role', 1, 'team', '/system/role', 'system/role/index', 'system:role:list', 2, 2, '角色管理'),
+(1, '模块管理', 'system:module', 1, 'menu', '/system/module', 'system/module/index', 'system:module:list', 3, 2, '模块管理'),
+(2, '用户查询', 'system:user:query', 2, NULL, NULL, NULL, 'system:user:query', 1, 3, '用户查询权限'),
+(2, '用户新增', 'system:user:add', 2, NULL, NULL, NULL, 'system:user:add', 2, 3, '用户新增权限'),
+(2, '用户修改', 'system:user:edit', 2, NULL, NULL, NULL, 'system:user:edit', 3, 3, '用户修改权限'),
+(2, '用户删除', 'system:user:delete', 2, NULL, NULL, NULL, 'system:user:delete', 4, 3, '用户删除权限'),
+(0, '教务管理', 'academic', 1, 'book', '/academic', 'Layout', 'academic', 2, 1, '教务管理模块'),
+(9, '学生管理', 'academic:student', 1, 'user', '/academic/student', 'academic/student/index', 'academic:student:list', 1, 2, '学生管理'),
+(9, '课程管理', 'academic:course', 1, 'read', '/academic/course', 'academic/course/index', 'academic:course:list', 2, 2, '课程管理'),
+(9, '成绩管理', 'academic:grade', 1, 'trophy', '/academic/grade', 'academic/grade/index', 'academic:grade:list', 3, 2, '成绩管理'); 
