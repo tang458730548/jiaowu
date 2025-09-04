@@ -1,0 +1,21 @@
+### 登陆
+POST http://127.0.0.1:9901/api/login/employee
+Content-Type: application/json
+
+{
+  "username" : "admin" ,
+  "password" : "123456",
+  "verificationCode" : "9999"
+}
+
+
+
+### 测试
+GET http://127.0.0.1:9901/api/test/health
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1Njg4ODk0NSwiZXhwIjoxNzU2ODkyNTQ1fQ.hlGiYg4G0WwI_-lfeJbQ9wPL_fI9KiCUE5ye3uX5SLI
+
+{
+}
+
+

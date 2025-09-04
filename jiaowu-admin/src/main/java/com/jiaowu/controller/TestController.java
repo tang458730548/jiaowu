@@ -1,6 +1,6 @@
 package com.jiaowu.controller;
 
-import com.jiaowu.common.Result;
+import com.jiaowu.response.common.ResultResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,9 +12,6 @@ import java.util.Map;
 
 /**
  * 测试控制器
- * 
- * @author jiaowu
- * @since 1.0.0
  */
 @Slf4j
 @RestController
@@ -25,7 +22,7 @@ public class TestController {
      * 健康检查接口
      */
     @GetMapping("/health")
-    public Result<Map<String, Object>> health() {
+    public ResultResponse<Map<String, Object>> health() {
         log.info("健康检查请求");
         
         Map<String, Object> data = new HashMap<>();
@@ -34,15 +31,15 @@ public class TestController {
         data.put("service", "jiaowu-backend");
         data.put("version", "1.0.0");
         
-        return Result.success("服务运行正常", data);
+        return ResultResponse.success("服务运行正常", data);
     }
     
     /**
      * 欢迎接口
      */
     @GetMapping("/welcome")
-    public Result<String> welcome() {
+    public ResultResponse<String> welcome() {
         log.info("欢迎接口请求");
-        return Result.success("欢迎使用教务管理系统后端服务！");
+        return ResultResponse.success("欢迎使用教务管理系统后端服务！");
     }
 } 

@@ -5,9 +5,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
  * JPA配置类
- * 
- * @author jiaowu
- * @since 1.0.0
  */
 @Configuration
 @EnableJpaAuditing

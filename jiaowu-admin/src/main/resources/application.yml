@@ -33,6 +33,9 @@ spring:
 # 日志配置
 logging:
   level:
+    org:
+      springframework:
+        security: DEBUG
     com.jiaowu: debug
     org.springframework.web: debug
     org.hibernate.SQL: debug
@@ -41,4 +44,11 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: logs/jiaowu-backend.log 
+    name: logs/jiaowu-backend.log
+
+# JWT配置
+jwt:
+  secret: hqmk0z+D//cA/ztOrXdZ8Nq8d6VhOfiFL4P5w+i8MWyq2wYko+tWGQSp5gtycZjiPJEaDqwJp54S1avJtSp7vw==
+  expiration: 3600000  # 1小时
+  refresh-expiration: 604800000  # 7天
+
