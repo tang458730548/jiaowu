@@ -21,6 +21,7 @@ const NotFound = ({ path }) => {
   return (
     <div style={{ 
       height: '100%', 
+      width: '100%',
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
@@ -53,21 +54,9 @@ const NotFound = ({ path }) => {
           padding: '48px 32px',
           borderRadius: 8,
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          maxWidth: 500,
           width: '100%'
         }}
       />
-      <div style={{ 
-        textAlign: 'center', 
-        marginTop: 16, 
-        color: '#666',
-        fontSize: '12px'
-      }}>
-        <p>可用的页面路径：</p>
-        <p style={{ margin: '4px 0' }}>• / - 登录页面</p>
-        <p style={{ margin: '4px 0' }}>• /home - 首页</p>
-        <p style={{ margin: '4px 0' }}>• /sys/module - 模块管理</p>
-      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { get, post, put, del } from './index';
+import { get, post, put, del } from '../index';
 
 // 模块管理相关API
 export const moduleAPI = {

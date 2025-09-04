@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, Button, message } from 'antd';
 import { LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import { authAPI } from '../api/auth';
+import { authAPI } from '../../api/platform/login';
 import CryptoJS from 'crypto-js';
 
 const ChangePassword = ({ visible, onCancel }) => {

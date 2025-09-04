@@ -1,5 +1,5 @@
-import { post, get, put, del } from './index';
-import api from './index';
+import { post, get, put, del } from '../index';
+import api from '../index';
 
 // 员工管理相关API
 export const employeeAPI = {

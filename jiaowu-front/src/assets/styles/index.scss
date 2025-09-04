@@ -1,27 +1,9 @@
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+// 基础样式
+@import './base/index.scss';
 
-#root {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+// 组件样式
+@import './components/login.scss';
+@import './components/layout.scss';
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.active {
-      color: #42b983;
-    }
-  }
-}
+// 视图样式
+@import './views/home.scss'; 

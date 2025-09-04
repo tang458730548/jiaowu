@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { authAPI } from './platform/login';
+import { Modal } from 'antd';
 
 // 创建axios实例
 const api = axios.create({
@@ -13,11 +15,15 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // 可以在这里添加token等认证信息
+    const user = authAPI.getCurrentUser();
+    if (user && user.accessToken) {
+      config.headers['Authorization'] = 'Bearer ' + user.accessToken;
+    }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // 响应拦截器
@@ -31,6 +37,17 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
+      if (error.status === 401) {
+        Modal.warn({
+          title: '鉴权失败',
+          content: '鉴权失败，点击返回登陆界面！',
+          onOk: () => {
+            authAPI.logout();
+            localStorage.removeItem('user');
+            window.location.href = "/"
+          },
+        });
+      }
       // 服务器返回错误状态码
       const errorMessage = error.response.data?.message || '网络请求失败';
       return Promise.reject(new Error(errorMessage));
@@ -41,7 +58,7 @@ api.interceptors.response.use(
       // 请求配置出错
       return Promise.reject(new Error('请求配置错误'));
     }
-  }
+  },
 );
 
 // 通用GET请求
@@ -64,4 +81,4 @@ export const del = async (url) => {
   return api.delete(url);
 };
 
-export default api; 
+export default api;

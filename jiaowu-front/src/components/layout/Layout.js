@@ -2,74 +2,35 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Layout, Menu, Dropdown, Tabs, Card, Row, Col, Avatar, Badge, Divider } from 'antd';
 import { 
-  UserOutlined, 
-  AppstoreOutlined, 
-  InfoCircleOutlined, 
-  TeamOutlined, 
-  CloseOutlined,
+  AppstoreOutlined,
+  TeamOutlined,
+  UserOutlined,
   SettingOutlined,
-  LogoutOutlined,
   KeyOutlined,
   BellOutlined,
+  LogoutOutlined,
   CrownOutlined,
-  MenuOutlined,
-  FileOutlined,
-  FolderOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  DashboardOutlined,
-  TableOutlined,
-  FormOutlined,
-  CalendarOutlined,
-  BarChartOutlined,
-  PieChartOutlined,
-  LineChartOutlined,
-  BookOutlined,
-  FileTextOutlined,
-  PictureOutlined,
-  VideoCameraOutlined,
-  AudioOutlined,
-  CloudOutlined,
-  DatabaseOutlined,
-  ApiOutlined,
-  ToolOutlined,
-  SafetyOutlined,
-  LockOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  GlobalOutlined,
-  EnvironmentOutlined,
-  HomeOutlined,
-  ShopOutlined,
-  CarOutlined,
-  RocketOutlined,
-  StarOutlined,
-  HeartOutlined,
-  LikeOutlined,
-  DislikeOutlined,
-  SmileOutlined,
-  FrownOutlined,
-  MehOutlined,
-  TrophyOutlined,
-  GiftOutlined,
-  FireOutlined,
-  ThunderboltOutlined,
-  BulbOutlined,
-  ExperimentOutlined,
-  CompassOutlined,
-  FlagOutlined
+  DownOutlined,
+  CloseCircleOutlined,
+  CloseSquareOutlined,
+  DeleteOutlined
 } from '@ant-design/icons';
 import { useHistory, useLocation } from 'react-router-dom';
-import logo2 from '../assets/img/logo2.png';
-import ChangePassword from './ChangePassword';
-import { moduleAPI } from '../api/module';
-import '../views/HomeTabsCustom.scss';
-import './LayoutTabs.scss';
+import logo2 from '../../assets/img/logo2.png';
+import ChangePassword from '../platform/ChangePassword';
+import { moduleAPI } from '../../api/platform/module';
+import { ContentRoutes } from '../../router';
+import { getIconByType } from '../../utils/iconUtils';
+import '../../assets/styles/views/home.scss';
+import '../../assets/styles/components/layout.scss';
+import { authAPI } from '../../api/platform/login';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { TabPane } = Tabs;
 
-const MainLayout = ({ children }) => {
+const MainLayout = () => {
   const history = useHistory();
   const location = useLocation();
 
@@ -90,30 +51,7 @@ const MainLayout = ({ children }) => {
       const menuData = processMenuData(modules);
       setMenuItems(menuData);
     } catch (error) {
-      // 如果加载失败，使用默认菜单
-      const defaultMenuItems = [
-        {
-          key: '/home',
-          icon: <AppstoreOutlined />,
-          label: '首页'
-        },
-        {
-          key: '/system/user',
-          icon: <TeamOutlined />,
-          label: '用户管理'
-        },
-        {
-          key: '/system/module',
-          icon: <AppstoreOutlined />,
-          label: '模块管理'
-        },
-        {
-          key: '/sys/student',
-          icon: <UserOutlined />,
-          label: '学生管理'
-        }
-      ];
-      setMenuItems(defaultMenuItems);
+      setMenuItems([]);
     } finally {
       setMenuLoading(false);
     }
@@ -127,7 +65,7 @@ const MainLayout = ({ children }) => {
     const isEnabled = module.isEnabled !== undefined ? module.isEnabled : 1;
     const path = module.path || module.moduleCode || `/${module.moduleName}`;
     
-    const shouldShow = moduleType === 1 && 
+    const shouldShow = (moduleType === 0 || moduleType === 1) && 
            isVisible === 1 && 
            isEnabled === 1 &&
            path; // 确保有路径
@@ -193,79 +131,7 @@ const MainLayout = ({ children }) => {
 
   // 获取菜单图标
   const getMenuIcon = (icon, moduleType) => {
-    // 如果有指定的图标，优先使用
-    if (icon) {
-      const iconMap = {
-        'UserOutlined': <UserOutlined />,
-        'TeamOutlined': <TeamOutlined />,
-        'AppstoreOutlined': <AppstoreOutlined />,
-        'InfoCircleOutlined': <InfoCircleOutlined />,
-        'DashboardOutlined': <DashboardOutlined />,
-        'TableOutlined': <TableOutlined />,
-        'FormOutlined': <FormOutlined />,
-        'CalendarOutlined': <CalendarOutlined />,
-        'BarChartOutlined': <BarChartOutlined />,
-        'PieChartOutlined': <PieChartOutlined />,
-        'LineChartOutlined': <LineChartOutlined />,
-        'BookOutlined': <BookOutlined />,
-        'FileTextOutlined': <FileTextOutlined />,
-        'PictureOutlined': <PictureOutlined />,
-        'VideoCameraOutlined': <VideoCameraOutlined />,
-        'AudioOutlined': <AudioOutlined />,
-        'CloudOutlined': <CloudOutlined />,
-        'DatabaseOutlined': <DatabaseOutlined />,
-        'ApiOutlined': <ApiOutlined />,
-        'ToolOutlined': <ToolOutlined />,
-        'SafetyOutlined': <SafetyOutlined />,
-        'LockOutlined': <LockOutlined />,
-        'KeyOutlined': <KeyOutlined />,
-        'BellOutlined': <BellOutlined />,
-        'MailOutlined': <MailOutlined />,
-        'PhoneOutlined': <PhoneOutlined />,
-        'GlobalOutlined': <GlobalOutlined />,
-        'EnvironmentOutlined': <EnvironmentOutlined />,
-        'HomeOutlined': <HomeOutlined />,
-        'ShopOutlined': <ShopOutlined />,
-        'CarOutlined': <CarOutlined />,
-        'RocketOutlined': <RocketOutlined />,
-        'StarOutlined': <StarOutlined />,
-        'HeartOutlined': <HeartOutlined />,
-        'LikeOutlined': <LikeOutlined />,
-        'DislikeOutlined': <DislikeOutlined />,
-        'SmileOutlined': <SmileOutlined />,
-        'FrownOutlined': <FrownOutlined />,
-        'MehOutlined': <MehOutlined />,
-        'CrownOutlined': <CrownOutlined />,
-        'TrophyOutlined': <TrophyOutlined />,
-        'GiftOutlined': <GiftOutlined />,
-        'FireOutlined': <FireOutlined />,
-        'ThunderboltOutlined': <ThunderboltOutlined />,
-        'BulbOutlined': <BulbOutlined />,
-        'ExperimentOutlined': <ExperimentOutlined />,
-        'CompassOutlined': <CompassOutlined />,
-        'FlagOutlined': <FlagOutlined />,
-        'MenuOutlined': <MenuOutlined />,
-        'SettingOutlined': <SettingOutlined />,
-        'FolderOutlined': <FolderOutlined />,
-        'FileOutlined': <FileOutlined />
-      };
-      
-      if (iconMap[icon]) {
-        return iconMap[icon];
-      }
-    }
-    
-    // 如果没有指定图标，根据类型返回默认图标
-    switch (moduleType) {
-      case 1: // 菜单
-        return <MenuOutlined />;
-      case 2: // 按钮
-        return <FileOutlined />;
-      case 3: // 页面
-        return <FileOutlined />;
-      default:
-        return <FolderOutlined />;
-    }
+    return getIconByType(icon, moduleType);
   };
 
   // 组件加载时获取菜单数据
@@ -278,9 +144,9 @@ const MainLayout = ({ children }) => {
     if (menuItems.length > 0) {
       // 找到当前路径对应的父菜单，并展开
       const findParentKey = (items, currentPath) => {
-        for (let item of items) {
+        for (const item of items) {
           if (item.children) {
-            for (let child of item.children) {
+            for (const child of item.children) {
               if (child.key === currentPath) {
                 return item.key;
               }
@@ -331,7 +197,7 @@ const MainLayout = ({ children }) => {
   const addTab = useCallback((key) => {
     // 查找对应的菜单项
     const findMenuItem = (items, targetKey) => {
-      for (let item of items) {
+      for (const item of items) {
         if (item.key === targetKey) {
           return item;
         }
@@ -385,6 +251,51 @@ const MainLayout = ({ children }) => {
     });
   };
 
+  // 关闭当前页签
+  const closeCurrentTab = () => {
+    if (activeKey !== '/home') {
+      removeTab(activeKey);
+    }
+  };
+
+  // 关闭左边页签
+  const closeLeftTabs = () => {
+    setTabs(prevTabs => {
+      const currentIndex = prevTabs.findIndex(tab => tab.key === activeKey);
+      const newTabs = prevTabs.filter((tab, index) => {
+        // 保留首页和当前页签及右边的页签
+        return tab.key === '/home' || index >= currentIndex;
+      });
+      return newTabs;
+    });
+  };
+
+  // 关闭右边页签
+  const closeRightTabs = () => {
+    setTabs(prevTabs => {
+      const currentIndex = prevTabs.findIndex(tab => tab.key === activeKey);
+      const newTabs = prevTabs.filter((tab, index) => {
+        // 保留首页和当前页签及左边的页签
+        return tab.key === '/home' || index <= currentIndex;
+      });
+      return newTabs;
+    });
+  };
+
+  // 关闭全部页签
+  const closeAllTabs = () => {
+    setTabs(prevTabs => {
+      // 只保留首页
+      const homeTab = prevTabs.find(tab => tab.key === '/home');
+      if (homeTab) {
+        setActiveKey('/home');
+        history.push('/home');
+        return [homeTab];
+      }
+      return [];
+    });
+  };
+
   // 页签切换
   const handleTabChange = (key) => {
     setActiveKey(key);
@@ -422,12 +333,51 @@ const MainLayout = ({ children }) => {
   };
 
   const handleLogout = () => {
+    authAPI.logout()
+    localStorage.removeItem('user');
     history.push('/');
   };
 
   const handleChangePassword = () => {
     setChangePasswordVisible(true);
   };
+
+  // 页签操作菜单
+  const tabOperationMenu = (
+    <Menu style={{ minWidth: 150, borderRadius: 6 }}>
+      <Menu.Item 
+        key="closeCurrent" 
+        icon={<CloseCircleOutlined />} 
+        onClick={closeCurrentTab}
+        disabled={activeKey === '/home'}
+      >
+        关闭当前
+      </Menu.Item>
+      <Menu.Item 
+        key="closeLeft" 
+        icon={<CloseSquareOutlined />} 
+        onClick={closeLeftTabs}
+      >
+        关闭左边
+      </Menu.Item>
+      <Menu.Item 
+        key="closeRight" 
+        icon={<CloseSquareOutlined />} 
+        onClick={closeRightTabs}
+      >
+        关闭右边
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item 
+        key="closeAll" 
+        icon={<DeleteOutlined />} 
+        onClick={closeAllTabs}
+        style={{ color: '#ff4d4f' }}
+      >
+        关闭全部
+      </Menu.Item>
+    </Menu>
+  );
 
   const userMenu = (
     <Menu style={{ minWidth: 200, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
@@ -647,10 +597,39 @@ const MainLayout = ({ children }) => {
               </div>
             ))}
           </div>
+          {/* 页签操作按钮 */}
+          {tabs.length > 1 && (
+            <Dropdown 
+              overlay={tabOperationMenu} 
+              placement="bottomRight" 
+              trigger={['click']}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '6px 12px',
+                marginLeft: 8,
+                borderRadius: 4,
+                cursor: 'pointer',
+                border: '1px solid #d9d9d9',
+                background: '#fff',
+                transition: 'all 0.3s',
+                ':hover': {
+                  backgroundColor: '#f5f5f5',
+                  borderColor: '#1890ff'
+                }
+              }}>
+                <span style={{ fontSize: '12px', color: '#666', marginRight: 4 }}>
+                  操作
+                </span>
+                <DownOutlined style={{ fontSize: '10px', color: '#999' }} />
+              </div>
+            </Dropdown>
+          )}
         </div>
         <Content style={{ margin: 0, padding: 0, background: '#f6f8fa', height: 'calc(100vh - 64px - 40px - 50px)', minHeight: 0, borderRadius: 0, boxShadow: 'none', overflow: 'hidden' }}>
           <div style={{ padding: 24, background: '#fff', height: '100%', overflow: 'auto' }}>
-            {children}
+            <ContentRoutes />
           </div>
         </Content>
         <Footer style={{ 

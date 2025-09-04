@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import './Login.scss';
-import logo2 from '../assets/img/logo2.png';
+import '../../assets/styles/components/login.scss';
+import logo2 from '../../assets/img/logo2.png';
 import { useHistory } from 'react-router-dom';
-import { authAPI } from '../api/auth';
+import { authAPI } from '../../api/platform/login';
 import CryptoJS from 'crypto-js';
 
 const { Title } = Typography;
@@ -34,16 +34,18 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const encryptedPassword = CryptoJS.MD5(values.password).toString();
+      // const encryptedPassword = CryptoJS.MD5(values.password).toString();
       const res = await authAPI.employeeLogin({
         username: values.username,
-        password: encryptedPassword,
+        password: values.password,
         verificationCode: values.verificationCode, // 用户输入的验证码
-        code: captchaCode,       // 后端下发的code
-        sessionId: sessionId     // sessionId
+        code: captchaCode, // 后端下发的code
+        sessionId: sessionId, // sessionId
       });
       setLoading(false);
       if (res && res.code === 200) {
+        // 存储token到localStorage
+        localStorage.setItem('user', JSON.stringify(res.data));
         message.success('登录成功！');
         history.push('/home');
       } else {
@@ -84,23 +86,47 @@ const Login = () => {
             <div className="login-logo">
               <img src={logo2} alt="教务系统Logo" />
             </div>
-            <Title level={3} className="login-title">教务管理系统登录</Title>
+            <Title level={3} className="login-title">
+              教务管理系统登录
+            </Title>
             <Form name="login" onFinish={onFinish} layout="vertical">
-              <Form.Item name="username" rules={[{ required: true, message: '请输入账号' }]}> 
-                <Input prefix={<UserOutlined />} placeholder="账号" size="large" />
+              <Form.Item
+                name="username"
+                rules={[{ required: true, message: '请输入账号' }]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="账号"
+                  size="large"
+                />
               </Form.Item>
-              <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]}> 
-                <Input.Password prefix={<LockOutlined />} placeholder="密码" size="large" />
+              <Form.Item
+                name="password"
+                rules={[{ required: true, message: '请输入密码' }]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder="密码"
+                  size="large"
+                />
               </Form.Item>
-              <Form.Item name="verificationCode" rules={[{ required: true, message: '请输入验证码' }]}> 
+              <Form.Item
+                name="verificationCode"
+                rules={[{ required: true, message: '请输入验证码' }]}
+              >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Input placeholder="验证码" size="large" style={{ flex: 1, marginRight: 8 }} autoComplete="off" />
+                  <Input
+                    placeholder="验证码"
+                    size="large"
+                    style={{ flex: 1, marginRight: 8 }}
+                    autoComplete="off"
+                  />
                   <div
-                    style={{ 
-                      height: 40, 
-                      width: 100, 
-                      cursor: 'pointer', 
-                      borderRadius: 4, 
+                    style={{
+                      height: 40,
+                      width: 100,
+                      cursor: 'pointer',
+                      borderRadius: 4,
                       border: '1px solid #eee',
                       backgroundColor: '#f6f8fa',
                       display: 'flex',
@@ -109,7 +135,7 @@ const Login = () => {
                       fontSize: '20px',
                       fontWeight: 'bold',
                       color: '#333',
-                      userSelect: 'none'
+                      userSelect: 'none',
                     }}
                     onClick={fetchCaptcha}
                     title="点击刷新验证码"
@@ -119,7 +145,13 @@ const Login = () => {
                 </div>
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" block size="large" loading={loading}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  loading={loading}
+                >
                   登录
                 </Button>
               </Form.Item>
@@ -128,22 +160,30 @@ const Login = () => {
         </div>
       </div>
       {/* 底部版权信息 */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        background: 'rgba(0, 0, 0, 0.3)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        padding: '12px 24px',
-        height: 50,
-        lineHeight: '26px',
-        backdropFilter: 'blur(5px)',
-        zIndex: 1000
-      }}>
-        <div style={{ color: '#fff', fontSize: '12px', textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)' }}>
-          © 2024 教务管理系统. All Rights Reserved. | 
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          padding: '12px 24px',
+          height: 50,
+          lineHeight: '26px',
+          backdropFilter: 'blur(5px)',
+          zIndex: 1000,
+        }}
+      >
+        <div
+          style={{
+            color: '#fff',
+            fontSize: '12px',
+            textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          © 2024 教务管理系统. All Rights Reserved. |
           <span style={{ marginLeft: 8, color: 'rgba(255, 255, 255, 0.8)' }}>
             技术支持：教务管理团队 | 版本：v1.0.0
           </span>
@@ -153,4 +193,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;
