@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Layout, Menu, Dropdown, Tabs, Card, Row, Col, Avatar, Badge, Divider } from 'antd';
-import { 
+import {
+  Layout,
+  Menu,
+  Dropdown,
+  Tabs,
+  Card,
+  Row,
+  Col,
+  Avatar,
+  Badge,
+  Divider,
+} from 'antd';
+import {
   AppstoreOutlined,
   TeamOutlined,
   UserOutlined,
@@ -15,7 +26,7 @@ import {
   DownOutlined,
   CloseCircleOutlined,
   CloseSquareOutlined,
-  DeleteOutlined
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import logo2 from '../../assets/img/logo2.png';
@@ -41,6 +52,26 @@ const MainLayout = () => {
   const [menuLoading, setMenuLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
+  const [userDetails, setUserDetails] = useState({});
+  const [systemName, setSystemName] = useState("");
+  const [copyright, setCopyright] = useState("");
+
+  //加载用户详情
+  const loadUser = async () => {
+    try {
+      const user = await authAPI.getCurrentUser();
+      setUserDetails(user.userDetails);
+
+      //顺便把系统配置
+      const indexPageInfos = await authAPI.getIndexPageInfosByLocalStorage(); 
+      setSystemName(indexPageInfos.systemName)
+      setCopyright(indexPageInfos.copyright)
+    } catch (error) {
+      setUserDetails({});
+      setSystemName("")
+      setCopyright("")
+    }
+  };
 
   // 加载模块菜单
   const loadModuleMenu = async () => {
@@ -64,24 +95,25 @@ const MainLayout = () => {
     const isVisible = module.isVisible !== undefined ? module.isVisible : 1;
     const isEnabled = module.isEnabled !== undefined ? module.isEnabled : 1;
     const path = module.path || module.moduleCode || `/${module.moduleName}`;
-    
-    const shouldShow = (moduleType === 0 || moduleType === 1) && 
-           isVisible === 1 && 
-           isEnabled === 1 &&
-           path; // 确保有路径
-    
+
+    const shouldShow =
+      (moduleType === 0 || moduleType === 1) &&
+      isVisible === 1 &&
+      isEnabled === 1 &&
+      path; // 确保有路径
+
     return shouldShow;
   };
 
   // 处理菜单数据
   const processMenuData = (modules) => {
     const menuData = [];
-    
+
     // 添加首页
     menuData.push({
       key: '/home',
       icon: <AppstoreOutlined />,
-      label: '首页'
+      label: '首页',
     });
 
     // 确保modules是数组
@@ -90,15 +122,16 @@ const MainLayout = () => {
     }
 
     // 处理模块数据
-    modules.forEach(module => {
+    modules.forEach((module) => {
       // 只显示符合条件的模块
       if (shouldShowInMenu(module)) {
-        const path = module.path || module.moduleCode || `/${module.moduleName}`;
+        const path =
+          module.path || module.moduleCode || `/${module.moduleName}`;
         const menuItem = {
           key: path, // 使用处理后的path
           icon: getMenuIcon(module.icon, module.moduleType),
           label: module.moduleName,
-          moduleData: module // 保存完整的模块数据
+          moduleData: module, // 保存完整的模块数据
         };
 
         // 如果有子模块，递归处理
@@ -116,15 +149,18 @@ const MainLayout = () => {
   // 处理子菜单数据
   const processSubMenuData = (children) => {
     return children
-      .filter(child => shouldShowInMenu(child)) // 只显示符合条件的模块
-      .map(child => {
+      .filter((child) => shouldShowInMenu(child)) // 只显示符合条件的模块
+      .map((child) => {
         const path = child.path || child.moduleCode || `/${child.moduleName}`;
         return {
           key: path, // 使用处理后的path
           icon: getMenuIcon(child.icon, child.moduleType),
           label: child.moduleName,
           moduleData: child, // 保存完整的模块数据
-          children: child.children && child.children.length > 0 ? processSubMenuData(child.children) : undefined
+          children:
+            child.children && child.children.length > 0
+              ? processSubMenuData(child.children)
+              : undefined,
         };
       });
   };
@@ -136,6 +172,7 @@ const MainLayout = () => {
 
   // 组件加载时获取菜单数据
   useEffect(() => {
+    loadUser();
     loadModuleMenu();
   }, []);
 
@@ -166,13 +203,13 @@ const MainLayout = () => {
       // 初始化页签
       if (tabs.length === 0) {
         // 添加首页页签
-        const homeMenuItem = menuItems.find(item => item.key === '/home');
+        const homeMenuItem = menuItems.find((item) => item.key === '/home');
         if (homeMenuItem) {
           const homeTab = {
             key: '/home',
             label: homeMenuItem.label,
             icon: homeMenuItem.icon,
-            closable: false
+            closable: false,
           };
           setTabs([homeTab]);
           setActiveKey('/home');
@@ -194,59 +231,63 @@ const MainLayout = () => {
   };
 
   // 添加页签
-  const addTab = useCallback((key) => {
-    // 查找对应的菜单项
-    const findMenuItem = (items, targetKey) => {
-      for (const item of items) {
-        if (item.key === targetKey) {
-          return item;
+  const addTab = useCallback(
+    (key) => {
+      // 查找对应的菜单项
+      const findMenuItem = (items, targetKey) => {
+        for (const item of items) {
+          if (item.key === targetKey) {
+            return item;
+          }
+          if (item.children) {
+            const found = findMenuItem(item.children, targetKey);
+            if (found) return found;
+          }
         }
-        if (item.children) {
-          const found = findMenuItem(item.children, targetKey);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const menuItem = findMenuItem(menuItems, key);
-    
-    if (menuItem) {
-      const newTab = {
-        key: key,
-        label: menuItem.label,
-        icon: menuItem.icon,
-        closable: key !== '/home' // 首页不可关闭
+        return null;
       };
 
-      setTabs(prevTabs => {
-        // 检查页签是否已存在
-        const existingTab = prevTabs.find(tab => tab.key === key);
-        if (!existingTab) {
-          const newTabs = [...prevTabs, newTab];
-          return newTabs;
-        }
-        return prevTabs;
-      });
+      const menuItem = findMenuItem(menuItems, key);
 
-      // 更新activeKey
-      setActiveKey(key);
-    }
-  }, [menuItems]);
+      if (menuItem) {
+        const newTab = {
+          key: key,
+          label: menuItem.label,
+          icon: menuItem.icon,
+          closable: key !== '/home', // 首页不可关闭
+        };
+
+        setTabs((prevTabs) => {
+          // 检查页签是否已存在
+          const existingTab = prevTabs.find((tab) => tab.key === key);
+          if (!existingTab) {
+            const newTabs = [...prevTabs, newTab];
+            return newTabs;
+          }
+          return prevTabs;
+        });
+
+        // 更新activeKey
+        setActiveKey(key);
+      }
+    },
+    [menuItems],
+  );
 
   // 关闭页签
   const removeTab = (targetKey) => {
-    setTabs(prevTabs => {
-      const newTabs = prevTabs.filter(tab => tab.key !== targetKey);
-      
+    setTabs((prevTabs) => {
+      const newTabs = prevTabs.filter((tab) => tab.key !== targetKey);
+
       // 如果关闭的是当前页签，需要切换到其他页签
       if (targetKey === activeKey && newTabs.length > 0) {
-        const currentIndex = prevTabs.findIndex(tab => tab.key === targetKey);
-        const newActiveKey = newTabs[currentIndex] || newTabs[currentIndex - 1] || newTabs[0];
+        const currentIndex = prevTabs.findIndex((tab) => tab.key === targetKey);
+        const newActiveKey =
+          newTabs[currentIndex] || newTabs[currentIndex - 1] || newTabs[0];
         setActiveKey(newActiveKey.key);
         history.push(newActiveKey.key);
       }
-      
+
       return newTabs;
     });
   };
@@ -260,8 +301,8 @@ const MainLayout = () => {
 
   // 关闭左边页签
   const closeLeftTabs = () => {
-    setTabs(prevTabs => {
-      const currentIndex = prevTabs.findIndex(tab => tab.key === activeKey);
+    setTabs((prevTabs) => {
+      const currentIndex = prevTabs.findIndex((tab) => tab.key === activeKey);
       const newTabs = prevTabs.filter((tab, index) => {
         // 保留首页和当前页签及右边的页签
         return tab.key === '/home' || index >= currentIndex;
@@ -272,8 +313,8 @@ const MainLayout = () => {
 
   // 关闭右边页签
   const closeRightTabs = () => {
-    setTabs(prevTabs => {
-      const currentIndex = prevTabs.findIndex(tab => tab.key === activeKey);
+    setTabs((prevTabs) => {
+      const currentIndex = prevTabs.findIndex((tab) => tab.key === activeKey);
       const newTabs = prevTabs.filter((tab, index) => {
         // 保留首页和当前页签及左边的页签
         return tab.key === '/home' || index <= currentIndex;
@@ -284,9 +325,9 @@ const MainLayout = () => {
 
   // 关闭全部页签
   const closeAllTabs = () => {
-    setTabs(prevTabs => {
+    setTabs((prevTabs) => {
       // 只保留首页
-      const homeTab = prevTabs.find(tab => tab.key === '/home');
+      const homeTab = prevTabs.find((tab) => tab.key === '/home');
       if (homeTab) {
         setActiveKey('/home');
         history.push('/home');
@@ -311,19 +352,15 @@ const MainLayout = () => {
   const renderMenuItem = (item) => {
     if (item.children && item.children.length > 0) {
       return (
-        <Menu.SubMenu 
-          key={item.key} 
-          icon={item.icon} 
-          title={item.label}
-        >
-          {item.children.map(child => renderMenuItem(child))}
+        <Menu.SubMenu key={item.key} icon={item.icon} title={item.label}>
+          {item.children.map((child) => renderMenuItem(child))}
         </Menu.SubMenu>
       );
     } else {
       return (
-        <Menu.Item 
-          key={item.key} 
-          icon={item.icon} 
+        <Menu.Item
+          key={item.key}
+          icon={item.icon}
           onClick={() => handleMenuClick(item.key)}
         >
           {item.label}
@@ -333,7 +370,7 @@ const MainLayout = () => {
   };
 
   const handleLogout = () => {
-    authAPI.logout()
+    authAPI.logout();
     localStorage.removeItem('user');
     history.push('/');
   };
@@ -345,32 +382,32 @@ const MainLayout = () => {
   // 页签操作菜单
   const tabOperationMenu = (
     <Menu style={{ minWidth: 150, borderRadius: 6 }}>
-      <Menu.Item 
-        key="closeCurrent" 
-        icon={<CloseCircleOutlined />} 
+      <Menu.Item
+        key="closeCurrent"
+        icon={<CloseCircleOutlined />}
         onClick={closeCurrentTab}
         disabled={activeKey === '/home'}
       >
         关闭当前
       </Menu.Item>
-      <Menu.Item 
-        key="closeLeft" 
-        icon={<CloseSquareOutlined />} 
+      <Menu.Item
+        key="closeLeft"
+        icon={<CloseSquareOutlined />}
         onClick={closeLeftTabs}
       >
         关闭左边
       </Menu.Item>
-      <Menu.Item 
-        key="closeRight" 
-        icon={<CloseSquareOutlined />} 
+      <Menu.Item
+        key="closeRight"
+        icon={<CloseSquareOutlined />}
         onClick={closeRightTabs}
       >
         关闭右边
       </Menu.Item>
       <Menu.Divider />
-      <Menu.Item 
-        key="closeAll" 
-        icon={<DeleteOutlined />} 
+      <Menu.Item
+        key="closeAll"
+        icon={<DeleteOutlined />}
         onClick={closeAllTabs}
         style={{ color: '#ff4d4f' }}
       >
@@ -380,52 +417,86 @@ const MainLayout = () => {
   );
 
   const userMenu = (
-    <Menu style={{ minWidth: 200, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-      <Menu.Item key="profile" style={{ height: 60, lineHeight: '60px', padding: '8px 16px' }}>
+    <Menu
+      style={{
+        minWidth: 200,
+        borderRadius: 8,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      }}
+    >
+      {/* <Menu.Item
+        key="profile"
+        style={{ height: 60, lineHeight: '60px', padding: '8px 16px' }}
+      >
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar 
-            size={40} 
-            icon={<UserOutlined />} 
-            style={{ 
-              backgroundColor: '#1890ff', 
+          <Avatar
+            size={40}
+            icon={<UserOutlined />}
+            style={{
+              backgroundColor: '#1890ff',
               marginRight: 16,
-              boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)'
+              boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)',
             }}
           />
           <div style={{ flex: 1 }}>
-            <div style={{ 
-              fontWeight: 'bold', 
-              fontSize: 16, 
-              color: '#262626',
-              marginBottom: 2,
-              lineHeight: '20px'
-            }}>
+            <div
+              style={{
+                fontWeight: 'bold',
+                fontSize: 16,
+                color: '#262626',
+                marginBottom: 2,
+                lineHeight: '20px',
+              }}
+            >
               系统管理员
             </div>
-            <div style={{ 
-              fontSize: 13, 
-              color: '#8c8c8c',
-              lineHeight: '16px'
-            }}>
+            <div
+              style={{
+                fontSize: 13,
+                color: '#8c8c8c',
+                lineHeight: '16px',
+              }}
+            >
               admin@jiaowu.com
             </div>
           </div>
         </div>
       </Menu.Item>
-      <Menu.Divider style={{ margin: '4px 0' }} />
-      <Menu.Item key="settings" icon={<SettingOutlined />} style={{ height: 40, lineHeight: '40px' }}>
+      <Menu.Divider style={{ margin: '4px 0' }} /> */}
+      <Menu.Item
+        key="settings"
+        icon={<SettingOutlined />}
+        onClick={() => {
+          window.location.hash = "/platform/param"
+        }}
+        style={{ height: 40, lineHeight: '40px' }}
+      >
         系统设置
       </Menu.Item>
-      <Menu.Item key="changePassword" icon={<KeyOutlined />} onClick={handleChangePassword} style={{ height: 40, lineHeight: '40px' }}>
+      <Menu.Item
+        key="changePassword"
+        icon={<KeyOutlined />}
+        onClick={handleChangePassword}
+        style={{ height: 40, lineHeight: '40px' }}
+      >
         修改密码
       </Menu.Item>
-      <Menu.Item key="notifications" icon={<BellOutlined />} style={{ height: 40, lineHeight: '40px' }}>
+      {/* <Menu.Item
+        key="notifications"
+        icon={<BellOutlined />}
+        style={{ height: 40, lineHeight: '40px' }}
+      >
         <Badge count={3} size="small">
           <span>消息通知</span>
         </Badge>
-      </Menu.Item>
+      </Menu.Item> */}
       <Menu.Divider style={{ margin: '4px 0' }} />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout} style={{ height: 40, lineHeight: '40px', color: '#ff4d4f' }}>
+      <Menu.Item
+        key="logout"
+        icon={<LogoutOutlined />}
+        onClick={handleLogout}
+        style={{ height: 40, lineHeight: '40px', color: '#ff4d4f' }}
+      >
         退出登录
       </Menu.Item>
     </Menu>
@@ -433,98 +504,132 @@ const MainLayout = () => {
 
   return (
     <Layout style={{ height: '100vh', minHeight: '100vh', overflow: 'hidden' }}>
-      <Sider 
+      <Sider
         collapsed={collapsed}
         onCollapse={setCollapsed}
         style={{ background: '#001529', height: '100vh' }}
         trigger={null}
       >
-        <div style={{ height: 64, margin: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src={logo2} alt="logo" style={{ height: 40, marginRight: collapsed ? 0 : 8 }} />
-          {!collapsed && <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>后台管理</span>}
+        <div
+          style={{
+            height: 64,
+            margin: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <img
+            src={logo2}
+            alt="logo"
+            style={{ height: 40, marginRight: collapsed ? 0 : 8 }}
+          />
+          {!collapsed && (
+            <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 22 }}>
+              后台管理
+            </span>
+          )}
         </div>
-        <Menu 
-          theme="dark" 
-          mode="inline" 
-          selectedKeys={[location.pathname]} 
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
           openKeys={openKeys}
           onOpenChange={handleMenuOpenChange}
           collapsed={collapsed}
           style={{ borderRight: 0 }}
           loading={menuLoading}
         >
-          {menuItems.map(item => renderMenuItem(item))}
+          {menuItems.map((item) => renderMenuItem(item))}
         </Menu>
       </Sider>
       <Layout style={{ height: '100vh', overflow: 'hidden' }}>
-        <Header style={{ 
-          background: '#fff', 
-          padding: '0 24px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          boxShadow: '0 2px 8px #f0f1f2', 
-          height: 64 
-        }}>
+        <Header
+          style={{
+            background: '#fff',
+            padding: '0 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 2px 8px #f0f1f2',
+            height: 64,
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div 
-              style={{ 
-                cursor: 'pointer', 
-                padding: '8px', 
+            <div
+              style={{
+                cursor: 'pointer',
+                padding: '8px',
                 borderRadius: '4px',
                 marginRight: 16,
                 transition: 'all 0.3s',
-                ':hover': { backgroundColor: '#f5f5f5' }
+                ':hover': { backgroundColor: '#f5f5f5' },
               }}
               onClick={() => setCollapsed(!collapsed)}
             >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </div>
-            <CrownOutlined style={{ fontSize: 20, color: '#1890ff', marginRight: 8 }} />
-            <span style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>教务管理系统</span>
+            <CrownOutlined
+              style={{ fontSize: 20, color: '#1890ff', marginRight: 8 }}
+            />
+            <span style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>
+              {systemName}
+            </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Badge count={5} size="small" style={{ marginRight: 16 }}>
-              <BellOutlined style={{ fontSize: 18, color: '#666', cursor: 'pointer' }} />
-            </Badge>
-            <Dropdown overlay={userMenu} placement="bottomRight" trigger={['click']}>
-              <div style={{ 
-                cursor: 'pointer', 
-                display: 'flex', 
-                alignItems: 'center',
-                padding: '8px 16px',
-                borderRadius: 8,
-                transition: 'all 0.3s',
-                border: '1px solid transparent',
-                ':hover': {
-                  backgroundColor: '#f5f5f5',
-                  borderColor: '#d9d9d9'
-                }
-              }}>
-                <Avatar 
-                  size={36} 
-                  icon={<UserOutlined />} 
-                  style={{ 
-                    backgroundColor: '#1890ff', 
+            {/* <Badge count={5} size="small" style={{ marginRight: 16 }}>
+              <BellOutlined
+                style={{ fontSize: 18, color: '#666', cursor: 'pointer' }}
+              />
+            </Badge> */}
+            <Dropdown
+              overlay={userMenu}
+              placement="bottomRight"
+              trigger={['click']}
+            >
+              <div
+                style={{
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  transition: 'all 0.3s',
+                  border: '1px solid transparent',
+                  ':hover': {
+                    backgroundColor: '#f5f5f5',
+                    borderColor: '#d9d9d9',
+                  },
+                }}
+              >
+                <Avatar
+                  size={36}
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor: '#1890ff',
                     marginRight: 12,
-                    boxShadow: '0 2px 6px rgba(24, 144, 255, 0.2)'
+                    boxShadow: '0 2px 6px rgba(24, 144, 255, 0.2)',
                   }}
                 />
                 <div style={{ marginRight: 8 }}>
-                  <div style={{ 
-                    fontWeight: 'bold', 
-                    color: '#262626', 
-                    fontSize: 14,
-                    lineHeight: '18px'
-                  }}>
-                    系统管理员
+                  <div
+                    style={{
+                      fontWeight: 'bold',
+                      color: '#262626',
+                      fontSize: 14,
+                      lineHeight: '18px',
+                    }}
+                  >
+                    {userDetails.nickname}
                   </div>
-                  <div style={{ 
-                    fontSize: 12, 
-                    color: '#8c8c8c',
-                    lineHeight: '14px'
-                  }}>
-                    admin@jiaowu.com
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: '#8c8c8c',
+                      lineHeight: '14px',
+                    }}
+                  >
+                   {userDetails.email}
                   </div>
                 </div>
                 <UserOutlined style={{ fontSize: 12, color: '#bfbfbf' }} />
@@ -533,25 +638,29 @@ const MainLayout = () => {
           </div>
         </Header>
         {/* 页签区域 */}
-        <div style={{ 
-          background: '#fff', 
-          borderBottom: '1px solid #f0f0f0',
-          padding: '0 24px',
-          height: 40,
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          overflow: 'hidden'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            flex: 1, 
-            overflow: 'auto',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            '&::-webkit-scrollbar': { display: 'none' }
-          }}>
-            {tabs.map(tab => (
+        <div
+          style={{
+            background: '#fff',
+            borderBottom: '1px solid #f0f0f0',
+            padding: '0 24px',
+            height: 40,
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flex: 1,
+              overflow: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
+            }}
+          >
+            {tabs.map((tab) => (
               <div
                 key={tab.key}
                 style={{
@@ -570,12 +679,21 @@ const MainLayout = () => {
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  transition: 'all 0.3s'
+                  transition: 'all 0.3s',
                 }}
                 onClick={() => handleTabChange(tab.key)}
               >
-                <span style={{ marginRight: 4, fontSize: '14px' }}>{tab.icon}</span>
-                <span style={{ fontSize: '13px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ marginRight: 4, fontSize: '14px' }}>
+                  {tab.icon}
+                </span>
+                <span
+                  style={{
+                    fontSize: '13px',
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   {tab.label}
                 </span>
                 {tab.closable && (
@@ -584,7 +702,7 @@ const MainLayout = () => {
                       marginLeft: 8,
                       color: '#999',
                       cursor: 'pointer',
-                      fontSize: '12px'
+                      fontSize: '12px',
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -599,27 +717,31 @@ const MainLayout = () => {
           </div>
           {/* 页签操作按钮 */}
           {tabs.length > 1 && (
-            <Dropdown 
-              overlay={tabOperationMenu} 
-              placement="bottomRight" 
+            <Dropdown
+              overlay={tabOperationMenu}
+              placement="bottomRight"
               trigger={['click']}
             >
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '6px 12px',
-                marginLeft: 8,
-                borderRadius: 4,
-                cursor: 'pointer',
-                border: '1px solid #d9d9d9',
-                background: '#fff',
-                transition: 'all 0.3s',
-                ':hover': {
-                  backgroundColor: '#f5f5f5',
-                  borderColor: '#1890ff'
-                }
-              }}>
-                <span style={{ fontSize: '12px', color: '#666', marginRight: 4 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '6px 12px',
+                  marginLeft: 8,
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  border: '1px solid #d9d9d9',
+                  background: '#fff',
+                  transition: 'all 0.3s',
+                  ':hover': {
+                    backgroundColor: '#f5f5f5',
+                    borderColor: '#1890ff',
+                  },
+                }}
+              >
+                <span
+                  style={{ fontSize: '12px', color: '#666', marginRight: 4 }}
+                >
                   操作
                 </span>
                 <DownOutlined style={{ fontSize: '10px', color: '#999' }} />
@@ -627,33 +749,49 @@ const MainLayout = () => {
             </Dropdown>
           )}
         </div>
-        <Content style={{ margin: 0, padding: 0, background: '#f6f8fa', height: 'calc(100vh - 64px - 40px - 50px)', minHeight: 0, borderRadius: 0, boxShadow: 'none', overflow: 'hidden' }}>
-          <div style={{ padding: 24, background: '#fff', height: '100%', overflow: 'auto' }}>
+        <Content
+          style={{
+            margin: 0,
+            padding: 0,
+            background: '#f6f8fa',
+            height: 'calc(100vh - 64px - 40px - 50px)',
+            minHeight: 0,
+            borderRadius: 0,
+            boxShadow: 'none',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{ padding: '10px 24px', background: '#fff', height: '100%' }}
+          >
             <ContentRoutes />
           </div>
         </Content>
-        <Footer style={{ 
-          textAlign: 'center', 
-          background: '#fff', 
-          borderTop: '1px solid #f0f0f0',
-          padding: '12px 24px',
-          height: 50,
-          lineHeight: '26px'
-        }}>
+        <Footer
+          style={{
+            textAlign: 'center',
+            background: '#fff',
+            borderTop: '1px solid #f0f0f0',
+            padding: '12px 24px',
+            height: 50,
+            lineHeight: '26px',
+          }}
+        >
           <div style={{ color: '#666', fontSize: '12px' }}>
-            © 2024 教务管理系统. All Rights Reserved. | 
+              <span>{copyright}</span>
+            {/* © 2024 教务管理系统. All Rights Reserved. |
             <span style={{ marginLeft: 8, color: '#999' }}>
               技术支持：教务管理团队 | 版本：v1.0.0
-            </span>
+            </span> */}
           </div>
         </Footer>
       </Layout>
-      <ChangePassword 
-        visible={changePasswordVisible} 
-        onCancel={() => setChangePasswordVisible(false)} 
+      <ChangePassword
+        visible={changePasswordVisible}
+        onCancel={() => setChangePasswordVisible(false)}
       />
     </Layout>
   );
 };
 
-export default MainLayout; 
+export default MainLayout;

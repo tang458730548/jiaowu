@@ -37,7 +37,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      if (error.status === 401) {
+      if (error.status === 403) {
         Modal.warn({
           title: '鉴权失败',
           content: '鉴权失败，点击返回登陆界面！',

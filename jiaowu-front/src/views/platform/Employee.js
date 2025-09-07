@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, message, Switch, Popconfirm } from 'antd';
 import { employeeAPI } from '../../api/platform/employee';
 import CommonTable from '../../components/table/CommonTable';
@@ -9,15 +9,16 @@ const EmployeeList = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [searchParams, setSearchParams] = useState({});
+  const tableRef = useRef(); // 添加 ref
 
   // 获取列表
   const fetchEmployees = async (page = 0, pageSize = 10, sortField = null, sortOrder = null) => {
     setLoading(true);
     try {
-      const requestBody = { 
-        page, 
-        size: pageSize, 
-        ...searchParams 
+      const requestBody = {
+        page,
+        size: pageSize,
+        ...searchParams
       };
       if (sortField && sortOrder) {
         requestBody.sort = sortField;
@@ -72,10 +73,10 @@ const EmployeeList = () => {
   const handleAdd = async (values) => {
     setLoading(true);
     try {
-      // 对密码进行MD5加密
-      if (values.password) {
-        values.password = CryptoJS.MD5(values.password).toString();
-      }
+      // // 对密码进行MD5加密
+      // if (values.password) {
+      //   values.password = CryptoJS.MD5(values.password).toString();
+      // }
       await employeeAPI.createEmployee(values);
       message.success('添加成功');
       fetchEmployees(pagination.current - 1, pagination.pageSize, null, null);
@@ -103,10 +104,12 @@ const EmployeeList = () => {
   };
 
   // 分页和排序
-  const handleTableChange = (pag, filters, sorter) => {
-    const sortField = sorter.field;
-    const sortOrder = sorter.order;
-    fetchEmployees(pag.current - 1, pag.pageSize, sortField, sortOrder);
+  const handleTableChange = (pag = {}, filters = {}, sorter = {}) => {
+    const current = Number(pag.current) || 1;
+    const pageSize = Number(pag.pageSize) || 10;
+    const sortField = sorter.field || sorter.columnKey || null;
+    const sortOrder = sorter.order || null;
+    fetchEmployees(current - 1, pageSize, sortField, sortOrder);
   };
 
   // 搜索
@@ -114,13 +117,13 @@ const EmployeeList = () => {
     const newSearchParams = values;
     setSearchParams(newSearchParams);
     setPagination({ ...pagination, current: 1 });
-    
-    const requestBody = { 
-      page: 0, 
-      size: pagination.pageSize, 
-      ...newSearchParams 
+
+    const requestBody = {
+      page: 0,
+      size: pagination.pageSize,
+      ...newSearchParams
     };
-    
+
     setLoading(true);
     employeeAPI.getEmployeeList(requestBody)
       .then(response => {
@@ -145,12 +148,12 @@ const EmployeeList = () => {
   const handleReset = () => {
     setSearchParams({});
     setPagination({ ...pagination, current: 1 });
-    
-    const requestBody = { 
-      page: 0, 
+
+    const requestBody = {
+      page: 0,
       size: pagination.pageSize
     };
-    
+
     setLoading(true);
     employeeAPI.getEmployeeList(requestBody)
       .then(response => {
@@ -174,14 +177,14 @@ const EmployeeList = () => {
   // 导出数据
   const handleExport = async () => {
     try {
-      const requestBody = { 
-        page: 0, 
+      const requestBody = {
+        page: 0,
         size: 999999,
-        ...searchParams 
+        ...searchParams
       };
-      
+
       const response = await employeeAPI.exportEmployees(requestBody);
-      
+
       const contentDisposition = response.headers?.['content-disposition'];
       let filename = '职工列表.xlsx';
       if (contentDisposition) {
@@ -190,7 +193,7 @@ const EmployeeList = () => {
           filename = filenameMatch[1].replace(/['"]/g, '');
         }
       }
-      
+
       const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -200,7 +203,7 @@ const EmployeeList = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       message.success('导出成功');
     } catch (error) {
       message.error(error.message || '导出失败');
@@ -213,53 +216,53 @@ const EmployeeList = () => {
   };
 
   const columns = [
-    { 
-      title: '用户名', 
-      dataIndex: 'username', 
+    {
+      title: '用户名',
+      dataIndex: 'username',
       key: 'username',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '性别', 
-      dataIndex: 'gender', 
-      key: 'gender', 
+    {
+      title: '性别',
+      dataIndex: 'gender',
+      key: 'gender',
       render: v => v === 'F' ? '女' : v === 'M' ? '男' : '-',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '昵称', 
-      dataIndex: 'nickname', 
+    {
+      title: '昵称',
+      dataIndex: 'nickname',
       key: 'nickname',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '职称', 
-      dataIndex: 'title', 
+    {
+      title: '职称',
+      dataIndex: 'title',
       key: 'title',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '邮箱', 
-      dataIndex: 'email', 
+    {
+      title: '邮箱',
+      dataIndex: 'email',
       key: 'email',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '入学年份', 
-      dataIndex: 'enrollYear', 
+    {
+      title: '入学年份',
+      dataIndex: 'enrollYear',
       key: 'enrollYear',
       sorter: true,
       sortDirections: ['ascend', 'descend']
     },
-    { 
-      title: '状态', 
-      dataIndex: 'status', 
-      key: 'status', 
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
       render: (status, record) => (
         <Switch
           checked={status === 1}
@@ -274,7 +277,12 @@ const EmployeeList = () => {
       key: 'action',
       render: (_, record) => (
         <>
-          <Button type="link" onClick={() => handleEdit(record.id, record)}>编辑</Button>
+          <Button type="link" onClick={() => {
+            // 调用 CommonTable 的编辑弹窗
+            if (tableRef.current) {
+              tableRef.current.showEditModal(record);
+            }
+          }}>编辑</Button>
           <Popconfirm title="确定要删除吗？" onConfirm={() => handleDelete(record.id)}>
             <Button type="link" danger>删除</Button>
           </Popconfirm>
@@ -317,14 +325,14 @@ const EmployeeList = () => {
         items: [
           {
             name: 'username',
-            label: <span>用户名 <span style={{color:'red'}}>*</span></span>,
+            label: <span>用户名 <span style={{ color: 'red' }}>*</span></span>,
             type: 'input',
             placeholder: '请输入用户名',
             rules: [{ required: true, message: '请输入用户名' }]
           },
           {
             name: 'password',
-            label: <span>密码 <span style={{color:'red'}}>*</span></span>,
+            label: <span>密码 <span style={{ color: 'red' }}>*</span></span>,
             type: 'password',
             placeholder: '请输入密码',
             rules: [{ required: true, message: '请输入密码' }],
@@ -337,7 +345,7 @@ const EmployeeList = () => {
         items: [
           {
             name: 'gender',
-            label: <span>性别 <span style={{color:'red'}}>*</span></span>,
+            label: <span>性别 <span style={{ color: 'red' }}>*</span></span>,
             type: 'radio',
             options: [
               { value: 'M', label: '男' },
@@ -347,7 +355,7 @@ const EmployeeList = () => {
           },
           {
             name: 'nickname',
-            label: <span>昵称 <span style={{color:'red'}}>*</span></span>,
+            label: <span>昵称 <span style={{ color: 'red' }}>*</span></span>,
             type: 'input',
             placeholder: '请输入昵称',
             rules: [{ required: true, message: '请输入昵称' }]
@@ -355,12 +363,19 @@ const EmployeeList = () => {
           {
             name: 'title',
             label: '职称',
-            type: 'input',
+            type: 'select',
+            options: [
+              { value: '教授', label: '教授' },
+              { value: '副教授', label: '副教授' },
+              { value: '讲师', label: '讲师' },
+              { value: '助教', label: '助教' },
+              { value: '其他', label: '其他' }
+            ],
             placeholder: '请输入职称'
           },
           {
             name: 'email',
-            label: <span>邮箱 <span style={{color:'red'}}>*</span></span>,
+            label: <span>邮箱 <span style={{ color: 'red' }}>*</span></span>,
             type: 'input',
             placeholder: '请输入邮箱',
             rules: [
@@ -378,7 +393,7 @@ const EmployeeList = () => {
           },
           {
             name: 'status',
-            label: <span>状态 <span style={{color:'red'}}>*</span></span>,
+            label: <span>状态 <span style={{ color: 'red' }}>*</span></span>,
             type: 'radio',
             options: [
               { value: 1, label: '正常' },
@@ -393,6 +408,7 @@ const EmployeeList = () => {
 
   return (
     <CommonTable
+      ref={tableRef}
       title="职工管理"
       columns={columns}
       dataSource={employees}

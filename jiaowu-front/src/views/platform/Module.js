@@ -315,7 +315,7 @@ const ModuleManagement = () => {
         moduleName: node.title,
         moduleCode: originalData.moduleCode || '',
         moduleType: originalData.moduleType || 1,
-        parentId: originalData.parentId || 0,
+        parentId: originalData.parentId ? String(originalData.parentId) : 0,
         level: originalData.level || 1,
         icon: originalData.icon || '',
         path: originalData.path || '',
@@ -502,14 +502,14 @@ const ModuleManagement = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Card>
-        <div style={{ marginBottom: 16 }}>
+    <div style={{overflow:'auto',height:'100%'}}>
+      <Card style={{ padding: '0px' }}>
+        {/* <div style={{ marginBottom: 16 }}>
           <Title level={4} style={{ margin: 0, marginBottom: 16 }}>
             <MenuOutlined style={{ marginRight: 8 }} />
             模块管理
           </Title>
-        </div>
+        </div> */}
         
         <Row gutter={24} style={{ height: 'calc(100vh - 200px)' }}>
           <Col span={8}>
@@ -537,7 +537,7 @@ const ModuleManagement = () => {
             >
               <div style={{ height: 'calc(100vh - 280px)' }}>
                 {/* 操作按钮区域 */}
-                <div style={{ marginBottom: 16 }}>
+                <div style={{ marginBottom: 16 , textAlign: 'left'}}>
                   <Space>
                     {editingNode && selectedKeys.length > 0 ? (
                       <>
@@ -554,14 +554,14 @@ const ModuleManagement = () => {
                         >
                           新增
                         </Button>
-                        <Button 
+                        {/* <Button 
                           type="primary" 
                           htmlType="submit" 
                           loading={loading}
                           onClick={() => form.submit()}
                         >
                           修改
-                        </Button>
+                        </Button> */}
                         {editingNode.node && (
                           <Popconfirm
                             title="确定要删除这个模块吗？"

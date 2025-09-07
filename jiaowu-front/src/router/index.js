@@ -6,9 +6,7 @@ import Login from '../components/platform/Login';
 import Employee from '../views/platform/Employee';
 import Module from '../views/platform/Module';
 import NotFound from '../components/platform/NotFound';
-import ReportList from '../views/report/ReportList';
-import ReportPreviewPage from '../views/report/ReportPreviewPage'; 
-
+import Param from '../views/platform/Param'
 
 // 主应用路由 - 包含Layout
 const AppRoutes = () => {
@@ -27,6 +25,7 @@ const ContentRoutes = () => {
       <Route exact path="/home" component={Home} />
       <Route path="/platform/employee" component={Employee} />
       <Route path="/platform/module" component={Module} />
+      <Route path="/platform/param" component={Param} />
       <Route path="*" component={NotFound} />
     </Switch>
   );
