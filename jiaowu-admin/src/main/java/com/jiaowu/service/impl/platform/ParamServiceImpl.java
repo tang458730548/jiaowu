@@ -129,4 +129,13 @@ public class ParamServiceImpl implements ParamService {
             throw new RuntimeException("导出CSV失败", e);
         }
     }
+
+    @Override
+    public String findByParamKey(String key) {
+        Optional<TbJwParam> optional = paramRepository.findByParamKey(key);
+        if(optional.isPresent()){
+            return optional.get().getParamValue();
+        }
+        return  "";
+    }
 } 

@@ -45,7 +45,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         // 不拦截的路径列表
         return "/api/verification/generate".equals(requestUri) ||
                 "/api/login/employee".equals(requestUri) ||
-                "/api/login/logout".equals(requestUri);
+                "/api/login/logout".equals(requestUri) ||
+                "/api/login/getIndexPageInfos".equals(requestUri);
     }
 
     @Override

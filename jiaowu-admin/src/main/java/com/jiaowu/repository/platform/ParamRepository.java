@@ -1,4 +1,4 @@
-﻿package com.jiaowu.repository.platform;
+package com.jiaowu.repository.platform;
 
 import com.jiaowu.entity.platform.TbJwParam;
 import org.springframework.data.domain.Page;

@@ -13,4 +13,6 @@ public interface ParamService {
     Page<TbJwParam> findAll(Pageable pageable, String paramName, String paramKey, String paramGroup, String paramType, Integer status);
     TbJwParam updateStatus(Long id, Integer status);
     byte[] exportToCsv(String paramName, String paramKey, String paramGroup, String paramType, Integer status);
-} 
+
+    String findByParamKey(String s);
+}

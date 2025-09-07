@@ -1,4 +1,4 @@
-﻿package com.jiaowu.entity.platform;
+package com.jiaowu.entity.platform;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

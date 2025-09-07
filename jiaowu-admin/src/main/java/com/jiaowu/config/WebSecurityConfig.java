@@ -56,7 +56,7 @@ public class WebSecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/verification/generate", "/login/employee", "/login/logout").permitAll()
+                .antMatchers("/verification/generate", "/login/**").permitAll()
                 .anyRequest().authenticated();
 
         // 添加JWT过滤器

@@ -1,21 +1,19 @@
-package com.jiaowu.controller.platform;
 
-import com.jiaowu.response.common.ResultResponse;
+package com.jiaowu.controller.platform;
 import com.jiaowu.entity.platform.TbJwEmployee;
 import com.jiaowu.request.platform.LoginRequest;
+import com.jiaowu.response.common.ResultResponse;
 import com.jiaowu.service.platform.EmployeeService;
+import com.jiaowu.service.platform.ParamService;
 import com.jiaowu.service.platform.VerificationCodeService;
 import com.jiaowu.utils.JwtUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,12 +36,14 @@ public class LoginController {
     private final VerificationCodeService verificationCodeService;
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
+    private final ParamService paramService;
 
-    public LoginController(EmployeeService employeeService, VerificationCodeService verificationCodeService, JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+    public LoginController(EmployeeService employeeService, VerificationCodeService verificationCodeService, JwtUtil jwtUtil, UserDetailsService userDetailsService, ParamService paramService) {
         this.employeeService = employeeService;
         this.verificationCodeService = verificationCodeService;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
+        this.paramService = paramService;
     }
 
     /**
@@ -65,14 +65,6 @@ public class LoginController {
                 return ResultResponse.error("验证码错误或已过期");
             }
         }
-
-//        // 进行用户认证
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        request.getUsername(),
-//                        request.getPassword()
-//                )
-//        );
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
 
@@ -131,4 +123,16 @@ public class LoginController {
         return ResultResponse.success("登出成功");
     }
 
+    @GetMapping("getIndexPageInfos")
+    public ResultResponse<Map<String, String>> getIndexPageInfos() {
+        Map<String, String> result = new HashMap<>(3);
+        //系统参数
+        String systemName = paramService.findByParamKey("system.name");
+        String copyright = paramService.findByParamKey("system.copyright");
+        String notice = paramService.findByParamKey("system.notice");
+        result.put("systemName", systemName);
+        result.put("copyright", copyright);
+        result.put("notice", notice);
+        return ResultResponse.success("获取系统基本参数", result);
+    }
 }
