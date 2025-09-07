@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
@@ -23,18 +24,20 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/create")
     public TbJwEmployee create(@RequestBody EmployeeCreateRequest request) {
         TbJwEmployee employee = new TbJwEmployee();
         employee.setUsername(request.getUsername());
-        employee.setPassword(request.getPassword());
         employee.setGender(request.getGender());
         employee.setNickname(request.getNickname());
         employee.setTitle(request.getTitle());
         employee.setEmail(request.getEmail());
         employee.setEnrollYear(request.getEnrollYear());
         employee.setStatus(request.getStatus());
+        employee.setPassword(passwordEncoder.encode(request.getPassword()));
         return employeeService.save(employee);
     }
 

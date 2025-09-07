@@ -1,0 +1,22 @@
+CREATE TABLE `tb_jw_param` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `param_key` VARCHAR(128) NOT NULL COMMENT '参数键，例如：system.name',
+  `param_name` VARCHAR(128) NOT NULL COMMENT '参数名称',
+  `param_value` TEXT NOT NULL COMMENT '参数值（字符串/数字/布尔/JSON/文本）',
+  `param_type` VARCHAR(32) NOT NULL COMMENT '参数类型：string/number/boolean/json/text',
+  `param_group` VARCHAR(64) NOT NULL COMMENT '参数分组：system/security/file/email/cache/database',
+  `description` VARCHAR(512) DEFAULT NULL COMMENT '参数描述',
+  `is_editable` TINYINT(1) DEFAULT 1 COMMENT '是否可编辑 1-是 0-否',
+  `is_required` TINYINT(1) DEFAULT 0 COMMENT '是否必填 1-是 0-否',
+  `status` TINYINT(1) DEFAULT 1 COMMENT '状态 1-启用 0-禁用',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `create_by` VARCHAR(64) DEFAULT 'system' COMMENT '创建人',
+  `update_by` VARCHAR(64) DEFAULT 'system' COMMENT '更新人',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_param_key` (`param_key`),
+  KEY `idx_param_group` (`param_group`),
+  KEY `idx_param_type` (`param_type`),
+  KEY `idx_status` (`status`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统参数表'; 

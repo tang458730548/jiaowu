@@ -7,10 +7,15 @@ import com.jiaowu.service.platform.EmployeeService;
 import com.jiaowu.service.platform.VerificationCodeService;
 import com.jiaowu.utils.JwtUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,33 +36,21 @@ public class LoginController {
 
     private final EmployeeService employeeService;
     private final VerificationCodeService verificationCodeService;
-    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
-    public LoginController(EmployeeService employeeService, VerificationCodeService verificationCodeService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    public LoginController(EmployeeService employeeService, VerificationCodeService verificationCodeService, JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         this.employeeService = employeeService;
         this.verificationCodeService = verificationCodeService;
-        this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
      * 职工登录
      */
     @PostMapping("/employee")
-    public ResultResponse<Map<String, Object>> employeeLogin(@RequestBody LoginRequest request) {
-
-        // 参数校验
-        if (StringUtils.isBlank(request.getUsername())) {
-            return ResultResponse.error("用户名不能为空");
-        }
-        if (StringUtils.isBlank(request.getPassword())) {
-            return ResultResponse.error("密码不能为空");
-        }
-        if (StringUtils.isBlank(request.getVerificationCode())) {
-            return ResultResponse.error("验证码不能为空");
-        }
-
+    public ResultResponse<Map<String, Object>> employeeLogin(@RequestBody @Valid LoginRequest request, HttpServletRequest httpServletRequest) {
         // 验证验证码
         String code = "9999";
         if (!code.equals(request.getVerificationCode())) {
@@ -72,22 +66,29 @@ public class LoginController {
             }
         }
 
-        // 进行用户认证
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
-                )
-        );
+//        // 进行用户认证
+//        Authentication authentication = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(
+//                        request.getUsername(),
+//                        request.getPassword()
+//                )
+//        );
 
-        // 将认证信息存入上下文
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+
+        // 设置认证信息
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()
+        );
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         final String accessToken = jwtUtil.generateToken(request.getUsername());
         final String refreshToken = jwtUtil.generateRefreshToken(request.getUsername());
 
         // 生成登录成功响应
         Map<String, Object> loginResult = new HashMap<>(2);
+        loginResult.put("userDetails", userDetails);
         loginResult.put("accessToken", accessToken);
         loginResult.put("refreshToken", refreshToken);
         return ResultResponse.success("登录成功", loginResult);

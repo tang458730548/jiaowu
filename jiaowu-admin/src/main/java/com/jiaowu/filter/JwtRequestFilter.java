@@ -67,7 +67,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // 2. 提取并验证Token（其他逻辑）
         String jwt = authorizationHeader.substring(7);
-        String username = null;
+        String username;
         try {
             username = jwtUtil.extractUsername(jwt);
         } catch (Exception e) {
