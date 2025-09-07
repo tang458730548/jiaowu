@@ -14,6 +14,7 @@ const Login = () => {
   const [captchaImg, setCaptchaImg] = useState('');
   const [captchaCode, setCaptchaCode] = useState('');
   const [sessionId, setSessionId] = useState('');
+  const [indexPageInfos, setIndexPageInfos] = useState({});
 
   // 获取验证码
   const fetchCaptcha = async () => {
@@ -27,7 +28,28 @@ const Login = () => {
     }
   };
 
+  //获取首页系统配置信息
+  const getIndexPageInfos = async () => {
+    try {
+      const res = await authAPI.getIndexPageInfos();
+      const data = res.data
+      setIndexPageInfos({
+        systemName: data.systemName,
+        copyright: data.copyright,
+        notice: data.notice
+      })
+      localStorage.setItem('indexPageInfos', JSON.stringify({
+        systemName: data.systemName,
+        copyright: data.copyright,
+        notice: data.notice
+      }));
+    } catch (e) {
+      setIndexPageInfos({})
+    }
+  };
+
   React.useEffect(() => {
+    getIndexPageInfos();
     fetchCaptcha();
   }, []);
 
@@ -64,7 +86,9 @@ const Login = () => {
       <div className="login-layout">
         <div className="login-left">
           {/* 可替换为SVG或更复杂的插画 */}
-          <div className="login-slogan">欢迎使用教务管理系统</div>
+          <div className="login-slogan">欢迎使用</div>
+          <div>
+            {indexPageInfos.systemName}</div>
           <div className="login-description">
             <p>• 学生信息管理</p>
             <p>• 课程安排管理</p>
@@ -73,8 +97,11 @@ const Login = () => {
           </div>
           <div className="login-notice">
             <h4>系统公告</h4>
-            <p>2024年春季学期选课将于3月1日开始</p>
-            <p>请各位师生及时关注系统通知</p>
+            {/* <p>2024年春季学期选课将于3月1日开始</p>
+            <p>请各位师生及时关注系统通知</p> */}
+            <p style={{ maxWidth: 200 }}>
+              {indexPageInfos.notice}
+            </p>
           </div>
           {/* <img
             className="login-illustration"
@@ -86,8 +113,8 @@ const Login = () => {
             <div className="login-logo">
               <img src={logo2} alt="教务系统Logo" />
             </div>
-            <Title level={3} className="login-title">
-              教务管理系统登录
+            <Title level={4} className="login-title">
+              {indexPageInfos.systemName}
             </Title>
             <Form name="login" onFinish={onFinish} layout="vertical">
               <Form.Item
@@ -183,10 +210,7 @@ const Login = () => {
             textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
           }}
         >
-          © 2024 教务管理系统. All Rights Reserved. |
-          <span style={{ marginLeft: 8, color: 'rgba(255, 255, 255, 0.8)' }}>
-            技术支持：教务管理团队 | 版本：v1.0.0
-          </span>
+          {indexPageInfos.copyright}
         </div>
       </div>
     </div>

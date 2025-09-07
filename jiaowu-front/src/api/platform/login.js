@@ -1,4 +1,4 @@
-import { post } from '../index';
+import { get, post } from '../index';
 
 // 认证相关API
 export const authAPI = {
@@ -30,6 +30,16 @@ export const authAPI = {
   // 修改密码
   changePassword: (data) => {
     return post('/api/user/changePassword', data);
+  },
+
+  //获取首页的一些系统参数信息
+  getIndexPageInfos: () => {
+    return get('/api/login/getIndexPageInfos')
+  },
+
+  // 
+  getIndexPageInfosByLocalStorage() {
+    return JSON.parse(localStorage.getItem('indexPageInfos'));
   },
 
   // 获取当前用户信息
